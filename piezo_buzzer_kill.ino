@@ -3,6 +3,14 @@ const int BUZZER_PIN = 10;
 
 int onoff = 0;
 
+int buzzerState = HIGH;
+int buttonState;
+int lastButtonState = LOW;
+
+unsigned long lastDebounceTime = 0;
+unsigned long debounceDelay = 50;
+
+
 const float songSpeed = 1.0;
 
 #define NOTE_D3 147
@@ -184,6 +192,8 @@ int durations[] = {
 };
 void setup() {
   pinMode(BUTTON_PIN, INPUT);
+
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -197,10 +207,9 @@ void loop() {
 
 void buzzer() {
   const int totalNotes = sizeof(notes) / sizeof(int);
-  if (onoff % 2 == 1) {
-      break;
-  }
+
   for (int i = 0; i < totalNotes; i++) {
+    
     const int currentNote = notes[i];
     float wait = durations[i] / songSpeed;
     // Play tone if currentNote is not 0 frequency, otherwise pause (noTone)
@@ -209,7 +218,20 @@ void buzzer() {
     } else {
       noTone(BUZZER_PIN);
     }
+    if (digitalRead(BUTTON_PIN) == HIGH) {
+      onoff++;
+      delay(100);
+      Serial.println((String) "digitalRead(BUTTON_PIN) : " + digitalRead(BUTTON_PIN));
+      Serial.println((String) "onoff : " + onoff);
+    }
+    if (digitalRead(BUTTON_PIN) == HIGH && onoff >= 2) {
+      onoff = 0;
+      delay(1000);
+      break;
+    }
     // delay is used to wait for tone to finish playing before moving to next loop
+    Serial.println((String) "digitalRead(BUTTON_PIN) : " + digitalRead(BUTTON_PIN));
+    Serial.println((String) "onoff : " + onoff);
     delay(wait);
   }
 }
